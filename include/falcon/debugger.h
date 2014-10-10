@@ -35,6 +35,9 @@ class PStep;
 class FALCON_DYN_CLASS Debugger: public BreakCallback
 {
 public:
+   const static unsigned char TYPE_MARK_EVAL = 0xFE;
+   const static unsigned char TYPE_MARK_EVAL_TELL = 0xFF;
+
    Debugger();
    virtual ~Debugger();
 

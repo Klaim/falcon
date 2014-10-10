@@ -17,6 +17,7 @@
 #define SRC "falcon/cm/debugger.cpp"
 
 #include <falcon/cm/debugger.h>
+#include <falcon/debugger.h>
 
 #include <falcon/vm.h>
 #include <falcon/vmcontext.h>
@@ -47,13 +48,19 @@ namespace CDebugger {
 
 /*#
   @method breakpoint Debugger
+  @optparam disp Display current source code when entering the debugger.
   @brief Breaks and gives back the control to the installed debugger.
  */
-FALCON_DECLARE_FUNCTION( breakpoint, "" )
+FALCON_DECLARE_FUNCTION( breakpoint, "disp:[B]" )
 void Function_breakpoint::invoke( VMContext* ctx, int32 )
 {
+   bool disp = ctx->param(0) != 0 ? ctx->param(0)->isTrue() : false;
+
    ctx->returnFrame();
-   ctx->topData().type(0xff);  // tell the debugger we're in.
+   ctx->topData().type(Debugger::TYPE_MARK_EVAL);  // tell the debugger we're in.
+   if ( disp ) {
+      ctx->topData().type(Debugger::TYPE_MARK_EVAL_TELL);  // tell the debugger we're in.
+   }
    ctx->setBreakpointEvent();
 }
 

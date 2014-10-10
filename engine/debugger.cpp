@@ -857,9 +857,14 @@ void Debugger::onBreak( Process* p, Processor*, VMContext* ctx )
    MESSAGE("Debugger::onBreak -- Debugger invoked.");
 
    bool addNil = false;
+
    // the result of the function Debugger.breakpoint() that called us
-   if( ctx->topData().type() == 0xff )
+   if( ctx->topData().type() == Debugger::TYPE_MARK_EVAL )
    {
+      if( ctx->topData().flags() != Debugger::TYPE_MARK_EVAL_TELL )
+      {
+         m_showCode = false;
+      }
       addNil = true;
       ctx->popData();
    }
