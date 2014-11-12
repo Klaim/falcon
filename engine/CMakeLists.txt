@@ -475,7 +475,7 @@ if( FALCON_STATIC_FEATHERS )
 	)
 	
 	foreach( item ${FEATHER_DIRS} )
-		include( "${CMAKE_SOURCE_DIR}/modules/native/feathers/${item}/CMakeLists.txt" )
+		include( "${FALCON_TOP_SOURCE_DIR}/modules/native/feathers/${item}/CMakeLists.txt" )
 		LIST(APPEND falcon_engine_SOURCES "${${item}_SOURCES}")
 	endforeach()
 
@@ -489,7 +489,7 @@ if( FALCON_STATIC_MODULES )
 	endif()   
 	
 	foreach( item ${MODULE_DIRS} )
-		include( "${CMAKE_SOURCE_DIR}/modules/native/${item}/src/CMakeLists.txt" )
+		include( "${FALCON_TOP_SOURCE_DIR}/modules/native/${item}/src/CMakeLists.txt" )
 		Message( "TEST: ${${item}_SOURCES}" )
 		LIST(APPEND falcon_engine_SOURCES "${${item}_SOURCES}")
 	endforeach()

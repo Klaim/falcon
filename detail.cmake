@@ -233,7 +233,7 @@ endif()
 #
 
 function( add_fam_target source )
-   file( RELATIVE_PATH source_relative "${CMAKE_SOURCE_DIR}" "${source}")
+   file( RELATIVE_PATH source_relative "${FALCON_TOP_SOURCE_DIR}" "${source}")
    
    get_filename_component( path_of_fal "${source_relative}"  PATH)
    get_filename_component( name_of_fal "${source_relative}"  NAME_WE)
