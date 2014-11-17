@@ -448,7 +448,10 @@ end
 @param line The line where this rule is (initially) declared.
 
 */
-class DefRule(sym, line)   
+class DefRule(sym, line, id)
+   // progressive rule ID -- just for accounting reasons
+   id = id
+   
    // line where the definition is declared
    line = line ? line: 0
    
@@ -522,9 +525,15 @@ class DefRule(sym, line)
       return self.leftPrec != 0 
    end
    
+   /*# 
+   */
    function dump( output, purged )
    
       alt = self
+      
+      if self.id != nil
+         output.write( @"/* ${self.id} */ " )
+      end
       
       for tok in alt.sequence
          tok.dump(output, purged)
@@ -967,6 +976,9 @@ class GrammarParser
                ]
                
    whiteSpaces = .[" " "\n" "\r" "\t"]
+   
+   // progressive ID for rules
+   defRuleID = 0
 
 
    /*#
@@ -976,10 +988,11 @@ class GrammarParser
       On success, the parser is configured and ready to parse one or
       more input sources.
    */
-   function parse( source, grammar )
-      
+   function parse( source, grammar )      
       if not grammar: grammar = Grammar()         
       self._grammar = grammar
+      
+      self.defRuleID = 0
       
       // we'll use the parameter checking of our multitokenizer
       try
@@ -1034,7 +1047,7 @@ class GrammarParser
       
       // used to reiterate the same token in different states
       take = true
-      
+            
       while mt.hasNext
 
          // used to reiterate the same token in different states
@@ -1216,7 +1229,7 @@ class GrammarParser
                      
                   case "|"
                      // new alternative
-                     currentAlt = DefRule( currentNT, self.curLine )
+                     currentAlt = DefRule( currentNT, self.curLine, ++self.defRuleID )
                      currentNT.alts += currentAlt
                      // stay in defbody state
                      
@@ -1547,7 +1560,7 @@ class GrammarParser
       self._NTStack.push(nt)
       
       // add a first alternative to the new token
-      alt = DefRule( nt, self.curLine )
+      alt = DefRule( nt, self.curLine, ++self.defRuleID )
       nt.alts += alt            
       
       return [nt, alt]
@@ -1753,7 +1766,7 @@ class GrammarParser
       top = main.top
       root = DefSymbol("<root>", DefSymbol.tNT)
       eof = self._grammar.predefined["eof"]
-      df = DefRule(root,0)
+      df = DefRule(root,0, 0)
       df.sequence = [DefEntry(top), DefEntry(eof)]
       root.alts = [df]
       top.parents = [df]

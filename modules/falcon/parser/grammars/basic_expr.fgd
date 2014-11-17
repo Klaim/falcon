@@ -1,0 +1,32 @@
+[main]
+
+FILE ::= COMMAND*.
+
+COMMAND ::= ! EXPRESSION:e ';' { > e }.
+
+EXPRESSION ::= 
+      '(' EXPRESSION:e ')' {e}
+   |  EXPRESSION:n1 plus EXPRESSION:n2 { n1 + n2 }
+   |  EXPRESSION:n1 minus EXPRESSION:n2 { n1 - n2 }
+   |  EXPRESSION:n1 times EXPRESSION:n2 { n1 * n2 }
+   |  EXPRESSION:n1 divided EXPRESSION:n2 { n1 / n2 }
+   |  EXPRESSION:n1 pow EXPRESSION:n2 { n1 ** n2 }
+   |  minus EXPRESSION:n1 {-n1}
+   |  NUMBER
+   .
+   
+NUMBER ::= r"-?[0-9]+(.[0-9]+)?":n1 { numeric(n1) } .
+
+plus :- '+'
+minus :- '-'
+times :- '*'
+divided :- '/'
+pow  :- '^'
+
+eat ::= " " "\n" "\r" "\t".
+
+precedence ::=
+   pow
+   | times divided:right
+   | plus minus.
+   

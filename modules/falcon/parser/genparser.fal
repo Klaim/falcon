@@ -53,10 +53,13 @@ class _EarleyItem(prod, orig, dot)
    
    function describe()
       pos = 0
-      // ok even if nil
-      dt = self.prod.symbol.name +  " => "
-      
       seq = self.prod.sequence
+      
+      compl = self.dot == seq.len ? "*" : " "      
+      // ok even if prod.symbol nil
+      dt = @"$({self.prod.id}r3)$compl) " + self.prod.symbol.name +  " => "
+      
+     
       while pos < seq.len
          if pos > 0: dt += " "
          if pos == self.dot: dt += "(*)"
@@ -279,7 +282,6 @@ class Parser(grammar)
       
       self._parseLoop()
          
-      self.dump()
       return self.errors == 0
    end
    
@@ -296,11 +298,13 @@ class Parser(grammar)
       loop
          cws = self._states[-1]
          seq = cws.sequence
+         
+         charts = cws.plan.charts
          seq += self._getNextToken()
          self._trace( "States ", self._states.len, ", tokens ", seq.len )
          
-         charts = cws.plan.charts
-         current = seq.len-1
+         current = charts.len-1
+         > "CURRENT: ", current, " > ", charts.len
          chart = charts[current]
          // chart.len will change as the predictor adds new items
          itemNum = 0
@@ -320,11 +324,22 @@ class Parser(grammar)
             ++itemNum
          end         
          
+         // was the last token recognized?
+         if seq.len > charts.len
+            //No? -- we have an unrecognized token error
+            self._error_unrec(seq)
+            if seq[-1].token == self._eof
+               break
+            end
+            seq.remove(-1)
+         end
+         
          > "=" * 50 + " Loop " + current
          > cws.plan.describe()
-         Debugger.breakpoint()
+         Debugger.breakpoint(false)
       end seq[-1].token == self._eof
          
+      cws = self._states[-1]
       > cws.plan.describe()
          
       // We want the top guess stack to be [TOP <eof>]
@@ -375,22 +390,14 @@ class Parser(grammar)
       orig = item.orig
       symbol = item.prod.symbol
       for itm in charts[orig].list
-         if charts.len == id
-            self._trace("Adding a new chart")
-            charts += _EarleyChart(id)
-         end
          
          // copying the completed entity
          de = itm.nextDefEntry()
          if de and de.symbol == symbol
-             // filter priority items.
-            if item.prod.pcheck()
-               // we can add it only if there isn't an intersecting completed arc of lower priority
-               frame = itm.dot + itm.orig
-               if self._filterPrec( charts[frame], item.prod.leftPrec, item.prod.leftAssoc )
-                  self._trace("Ignoring this item because frame ", frame, " has completed priority: ", itm )
-                  continue
-               end
+            
+            if charts.len == id
+               self._trace("Adding a new chart")
+               charts += _EarleyChart(id)
             end
             
             itm = itm.clone()
@@ -401,14 +408,21 @@ class Parser(grammar)
       end            
    end
 
-   function _filterPrec( chart, prec, assoc )      
+   function _filterPrec( chart, ckitem, prec, assoc )
+      prec = ckitem.prod.leftPrec
+      assoc = ckitem.prod.leftAssoc
+      sym = ckitem.prod.sequence[ckitem.dot].symbol
+      self._trace("Checking for priority completion of: ", sym.name )
+      
       for i = 0 to chart.list.len-1
          item = chart.list[i]
-         
-         if item.prod.leftPrec > 0
-            if item.prod.leftPrec < prec or \
-               (item.prod.leftPrec == prec and item.prod.leftAssoc <= assoc )
-               return true
+         prod = item.prod
+         if not item.incomplete() and prod.pcheck()
+            // we need to know which symbol is produced as complete here
+            csym = item.prod.symbol            
+            if csym == sym and ( prod.leftPrec < prec or \
+               (prod.leftPrec == prec and prod.leftAssoc <= assoc ))
+               return (ckitem.orig + ckitem.dot+1) < (item.orig + item.dot)
             end
          end
       end
@@ -419,6 +433,11 @@ class Parser(grammar)
    // error step of the parser loop
    function _error()
       // todo
+   end
+   
+      // error step of the parser loop
+   function _error_unrec( seq )
+      > "UNRECOGNIZED TOKEN ", seq[-1].describe()
    end
    
    // Applies a rule, reducing the sequence as described by the rule
@@ -486,7 +505,7 @@ class Parser(grammar)
       end
       
       // once hit the end, continue to generate end tokens
-      return _Tau(self._end)
+      return _Tau(nil, self._eof)
    end
    
    function _sendEOF()
@@ -494,23 +513,7 @@ class Parser(grammar)
    
    
    function dump()
-      for cws in self._states
-         > "IN STATE: ", cws.state.name
-         
-         guessCount = 1
-         for guess in cws.guesses
-            > "   ", "Guess ", guessCount
-            
-            for tok in guess.sequence
-               > "   "*2, tok.describe()
-            end
-            
-            > "   ", "=== END OF Guess ", guessCount
-            ++guessCount
-         end
-         
-         >  "=== END OF State ", cws.state.name
-      end         
+     //TODO
    end
    
    function describeError(code)
