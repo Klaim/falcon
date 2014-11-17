@@ -117,7 +117,7 @@ void MinOrMax::CompareNextStep::apply_( const PStep* ps, VMContext* ctx )
       else
       {
          // something simple.
-         int comp = ctx->topData().compare(*current);
+         int64 comp = ctx->topData().compare(*current);
          if( m_bIsMax ) comp = -comp;
 
          if( comp > 0 )
