@@ -197,7 +197,8 @@ macro(FalconDeclareFeather LIBNAME SOURCES EXTLIBS)
 	   install( TARGETS ${CURRENT_MODULE}
 	            DESTINATION  "${FALCON_MOD_DIR}" )
 		
-	   LIST(APPEND Falcon_Feathers_project_targets ${CURRENT_MODULE})
+	   LIST(APPEND Falcon_Feathers_project_targets "${CURRENT_MODULE}")
+	   set(Falcon_Feathers_project_targets "${Falcon_Feathers_project_targets}" PARENT_SCOPE)
 	endif()
 		
 endmacro()
