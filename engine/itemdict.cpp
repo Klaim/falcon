@@ -149,7 +149,7 @@ bool ItemDict::remove( const Item& key )
 {
    Item keycp;
    keycp.copyFromRemote(key);
-   bool result = _p->m_itemMap.erase(keycp);
+   bool result = _p->m_itemMap.erase(keycp) != 0;
    return result;
 }
 

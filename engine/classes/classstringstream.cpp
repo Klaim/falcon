@@ -104,7 +104,7 @@ void Function_init::invoke(Falcon::VMContext *ctx, Falcon::int32)
          String* data = i_count->asString();
          count = (int64) data->size();
          ss = new StringStream( (int32) count );
-         ss->write(data->getRawStorage(), count);
+         ss->write(data->getRawStorage(), (int32) count);
          ss->seekBegin(0);
       }
       else if( i_count->isOrdinal() )

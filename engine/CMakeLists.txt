@@ -482,9 +482,11 @@ if( FALCON_STATIC_FEATHERS )
 endif()
 
 if( FALCON_STATIC_MODULES )
-	set( MODULE_DIRS
-		curl
-	)	
+	if( FALCON_BUILD_CURL ) 
+		set( MODULE_DIRS 
+ 		     curl 
+ 	    ) 
+	endif()   
 	
 	foreach( item ${MODULE_DIRS} )
 		include( "${CMAKE_SOURCE_DIR}/modules/native/${item}/src/CMakeLists.txt" )

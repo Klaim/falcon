@@ -323,7 +323,7 @@ bool DataReader::read( String& tgt )
 void DataReader::resetStream()
 {
    fassert( m_bufLength >= m_bufPos );
-   m_stream->seekCurrent(-(m_bufLength-m_bufPos));
+   m_stream->seekCurrent(-(int64)(m_bufLength-m_bufPos));
    m_bufLength = 0;
    m_bufPos = 0;
 }
